@@ -58,7 +58,6 @@ export const getPushTokens = async (team_id: Number) => {
   return expoPushTokens;
 } 
 
-
 ////////////////// EVENT FETCHER \\\\\\\\\\\\\\\\\\
 
 const typeMapping = { 

@@ -122,19 +122,12 @@ async function queryDatabaseAndPerformActions() {
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
 
     if (latestEvent && latestEvent.length > 0) {
-    
       const id = latestEvent[0].id
- 
-
       if (id > counterid) {
-
         const player_id = latestEvent[0].player_id
         const related_id = latestEvent[0].related_id
-
         const tokens = await postgresService.getExpoPushTokens(player_id, related_id)
-
         counterid = id;
-        
         sendNotifications(tokens, latestEvent);
       } else {
       }
