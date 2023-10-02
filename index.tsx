@@ -28,6 +28,22 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
   res.status(200).json({ message: 'success' });
 });
 
+
+app.post('/pingInterval', jsonParser, async (req, res) => {
+  try {
+   
+    const pData = req.body.key;
+    
+    console.log("backend pinged", pData)
+    
+
+    res.status(200).json({ message: 'Ping received successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/getToken', jsonParser, async (req, res) => {
   const expoPushToken = String(req.body.expoPushToken);
   try {
