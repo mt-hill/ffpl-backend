@@ -7,11 +7,12 @@ const app = express();
 const port = 8000;
 const expo = new Expo();
 const jsonParser = BodyParser.json();
+const connectionString = process.env.DB_CONNECTION_STRING
 
 const pgPromises = require ('pg-promise')
 const pgps = pgPromises();
 const dbs = pgps({
-  connectionString: 'postgresql://flashfpldb_user:jFhDJIJJ3C3KzhirjH5FGiCQutwnK3HA@dpg-ck1gvoeru70s73dpd9q0-a.frankfurt-postgres.render.com/flashfpldb',
+  connectionString: connectionString,
   ssl: {
     rejectUnauthorized: false,
   },
