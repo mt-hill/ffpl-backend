@@ -133,7 +133,6 @@ async function queryDatabaseAndPerformActions() {
         const tokens = await postgresService.getExpoPushTokens(player_id, related_id)
         sendNotifications(tokens, latestEvent);
         processedEventIDs.add(id);
-        await new Promise(resolve => setTimeout(resolve, 1000));
       } else {
       }
     } else { 
