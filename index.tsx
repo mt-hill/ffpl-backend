@@ -127,14 +127,14 @@ async function queryDatabaseAndPerformActions() {
 
     if (latestEvent && latestEvent.length > 0) {
       const id = latestEvent[0].id
-      if (!processedEventIDs.has(id)) {
+      if (processedEventIDs.has(id)) {
+        return;
+      } else {
         const player_id = latestEvent[0].player_id
         const related_id = latestEvent[0].related_id
         const tokens = await postgresService.getExpoPushTokens(player_id, related_id)
         sendNotifications(tokens, latestEvent);
         processedEventIDs.add(id);
-        console.log("new event processed in queryDatabaseAndPerformActions, sendNotifications function triggered")
-      } else {
       }
     } else { 
       console.log ("empty database")
