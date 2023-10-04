@@ -8,6 +8,7 @@ const port = 8000;
 const expo = new Expo();
 const jsonParser = BodyParser.json();
 const connectionString = process.env.DB_CONNECTION_STRING
+//const connectionString = 'postgresql://flashfpldb_user:jFhDJIJJ3C3KzhirjH5FGiCQutwnK3HA@dpg-ck1gvoeru70s73dpd9q0-a.frankfurt-postgres.render.com/flashfpldb';
 
 const pgPromises = require ('pg-promise')
 const pgps = pgPromises();
@@ -29,20 +30,6 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
 });
 
 
-app.post('/pingInterval', jsonParser, async (req, res) => {
-  try {
-   
-    const pData = req.body.key;
-    
-    console.log("backend pinged", pData)
-    
-
-    res.status(200).json({ message: 'Ping received successfully' });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 app.post('/getToken', jsonParser, async (req, res) => {
   const expoPushToken = String(req.body.expoPushToken);
@@ -133,19 +120,19 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
   }}
 };
 
-let counterid = 0;
+const processedEventIDs = new Set();
 async function queryDatabaseAndPerformActions() {
   try {
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
 
     if (latestEvent && latestEvent.length > 0) {
       const id = latestEvent[0].id
-      if (id > counterid) {
+      if (!processedEventIDs.has(id)) {
         const player_id = latestEvent[0].player_id
         const related_id = latestEvent[0].related_id
         const tokens = await postgresService.getExpoPushTokens(player_id, related_id)
-        counterid = id;
         sendNotifications(tokens, latestEvent);
+        processedEventIDs.add(id);
       } else {
       }
     } else { 

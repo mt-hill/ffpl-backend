@@ -2,6 +2,7 @@ import pgPromise from "pg-promise";
 const axios = require('axios');
 const pgp = pgPromise();
 const connectionString = process.env.DB_CONNECTION_STRING
+//const connectionString = 'postgresql://flashfpldb_user:jFhDJIJJ3C3KzhirjH5FGiCQutwnK3HA@dpg-ck1gvoeru70s73dpd9q0-a.frankfurt-postgres.render.com/flashfpldb';
 const apiConnectionString = process.env.API_CONNECTION_STRING
 const db = pgp({
   connectionString: connectionString,
@@ -85,6 +86,7 @@ interface EventData {
 }
 
 const apiUrl = apiConnectionString;
+//const apiUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/2023-09-29/2023-09-30?api_token=GEN2BiwqhnXlX0yb5vF1LKEgylNZv8g8TgYqSP2m3ywdgzda0xjQjmrWBGEw&include=events;'
 
 let loggedEventIds: number[] = [];
 
