@@ -121,41 +121,23 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 };
 
 const processedEventIDs = new Set();
-let isQuerying = false;
 async function queryDatabaseAndPerformActions() {
-  if (isQuerying) {
-    console.log("query already in process, skipping");
-    return;
-  }
   try {
-    isQuerying = true;
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
-
-    if (latestEvent && latestEvent.length > 0) {
-      const id = latestEvent[0].id
-      if (!processedEventIDs.has(id)) {
+    const id = latestEvent[0].id
+    if (latestEvent && latestEvent.length > 0 && !processedEventIDs.has(id)) {
         const player_id = latestEvent[0].player_id
         const related_id = latestEvent[0].related_id
         const tokens = await postgresService.getExpoPushTokens(player_id, related_id)
         sendNotifications(tokens, latestEvent);
         processedEventIDs.add(id);
-
-      } else {
-      }
     } else { 
-      console.log ("empty database")
-      
+      console.log ("empty database/no new event", "(", id, "already processed )")
     }
-     
   } catch (error) {
     console.error('Error querying the database:', error);
-  } finally {
-    isQuerying = false;
   }
-} queryDatabaseAndPerformActions();
-
-
-
+} setInterval(queryDatabaseAndPerformActions, 1000);
 
 
 
