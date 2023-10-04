@@ -139,12 +139,12 @@ async function queryDatabaseAndPerformActions() {
         const tokens = await postgresService.getExpoPushTokens(player_id, related_id)
         sendNotifications(tokens, latestEvent);
         processedEventIDs.add(id);
-        setInterval(queryDatabaseAndPerformActions, 1000);
+
       } else {
       }
     } else { 
       console.log ("empty database")
-      setInterval(queryDatabaseAndPerformActions, 1000);
+      
     }
      
   } catch (error) {
