@@ -142,7 +142,7 @@ async function queryDatabaseAndPerformActions() {
   } catch (error) {
     console.error('Error querying the database:', error);
   }
-} setInterval(queryDatabaseAndPerformActions, 490);
+} setInterval(queryDatabaseAndPerformActions, 1550);
 
 
 app.listen(port, () => {
