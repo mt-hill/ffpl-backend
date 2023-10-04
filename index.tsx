@@ -110,8 +110,6 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
       title: notificationTitle,
       body: notificationBody,
     }));
-  
-
   try {
     const ticketChunk = await expo.sendPushNotificationsAsync(messages);
     console.log("push notifications sent", ticketChunk);
@@ -121,25 +119,26 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 };
 
 const processedEventIDs = new Set();
-async function queryDatabaseAndPerformActions() {
+async function queryDatabase() {
   try {
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
-    const id = latestEvent[0].id
-    if (latestEvent && latestEvent.length > 0 && !processedEventIDs.has(id)) {
-        const player_id = latestEvent[0].player_id
-        const related_id = latestEvent[0].related_id
-        const tokens = await postgresService.getExpoPushTokens(player_id, related_id)
-        sendNotifications(tokens, latestEvent);
-        processedEventIDs.add(id);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    } else { 
-      console.log ("empty database/no new event", "(", id, "already processed )")
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    const id = latestEvent[0].id;
+
+    if (id && !processedEventIDs.has(id)) {
+      const player_id = latestEvent[0].player_id;
+      const related_id = latestEvent[0].related_id;
+      const tokens = await postgresService.getExpoPushTokens(player_id, related_id);
+
+      sendNotifications(tokens, latestEvent);
+      processedEventIDs.add(id);
+    } else {
+      console.log(id, "already logged or no id to log")
+      return;
     }
   } catch (error) {
-    console.error('Error querying the database:', error);
+    console.log(error)
   }
-} queryDatabaseAndPerformActions();
+} setInterval(queryDatabase, 1000);
 
 
 
