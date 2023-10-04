@@ -121,8 +121,14 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 };
 
 const processedEventIDs = new Set();
+let isQuerying = false;
 async function queryDatabaseAndPerformActions() {
+  if (isQuerying) {
+    console.log("query already in process, skipping");
+    return;
+  }
   try {
+    isQuerying = true;
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
 
     if (latestEvent && latestEvent.length > 0) {
@@ -141,8 +147,14 @@ async function queryDatabaseAndPerformActions() {
      
   } catch (error) {
     console.error('Error querying the database:', error);
+  } finally {
+    isQuerying = false;
   }
-} setTimeout(queryDatabaseAndPerformActions, 2000);
+} queryDatabaseAndPerformActions();
+
+setInterval(queryDatabaseAndPerformActions, 999);
+
+
 
 
 app.listen(port, () => {
