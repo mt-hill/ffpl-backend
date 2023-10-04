@@ -114,6 +114,7 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 
   try {
     const ticketChunk = await expo.sendPushNotificationsAsync(messages);
+    console.log(tokens)
     console.log("push notifications sent", ticketChunk);
   } catch (error) {
     console.error('Error sending push notifications:', error);
