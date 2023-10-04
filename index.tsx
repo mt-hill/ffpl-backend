@@ -134,6 +134,7 @@ async function queryDatabaseAndPerformActions() {
         setInterval(queryDatabaseAndPerformActions, 1000);
     } else { 
       console.log ("empty database/no new event", "(", id, "already processed )")
+      setInterval(queryDatabaseAndPerformActions, 1000);
     }
   } catch (error) {
     console.error('Error querying the database:', error);
