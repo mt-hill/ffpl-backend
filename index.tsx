@@ -124,23 +124,21 @@ async function queryDatabase() {
       console.log("Querying already......");
       return;
     };
+
     isProcessing = true;
+
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
+    const id = latestEvent[0].id;
 
-    if (latestEvent) {
-        const id = latestEvent[0].id;
-        if (!processedEventIDs.has(id)) {
-          const player_id = latestEvent[0].player_id;
-          const related_id = latestEvent[0].related_id;
-          const tokens = await postgresService.getExpoPushTokens(player_id, related_id);
+    if (id && !processedEventIDs.has(id)) {
+      const player_id = latestEvent[0].player_id;
+      const related_id = latestEvent[0].related_id;
+      const tokens = await postgresService.getExpoPushTokens(player_id, related_id);
 
-          sendNotifications(tokens, latestEvent);
-          processedEventIDs.add(id);
-        } else {
-          console.log(id, "already logged");
-        }
+      sendNotifications(tokens, latestEvent);
+      processedEventIDs.add(id);
     } else {
-      console.log("no event");
+      console.log(id, "already logged or no id to log");
     }
   } catch (error) {
     console.log(error);
