@@ -152,7 +152,7 @@ async function queryDatabaseAndPerformActions() {
   }
 } queryDatabaseAndPerformActions();
 
-setInterval(queryDatabaseAndPerformActions, 999);
+setInterval(queryDatabaseAndPerformActions, 1000);
 
 
 
