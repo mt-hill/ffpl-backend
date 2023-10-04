@@ -119,8 +119,17 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 };
 
 const processedEventIDs = new Set();
+let isProcessing = false;
+
 async function queryDatabase() {
   try {
+    if (isProcessing) {
+      console.log("Querying already......");
+      return;
+    };
+
+    isProcessing = true;
+
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
     const id = latestEvent[0].id;
 
@@ -132,15 +141,15 @@ async function queryDatabase() {
       sendNotifications(tokens, latestEvent);
       processedEventIDs.add(id);
     } else {
-      console.log(id, "already logged or no id to log")
-      return;
+      console.log(id, "already logged or no id to log");
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
+  } finally {
+    isProcessing = false;
   }
-} setInterval(queryDatabase, 1000);
-
-
+ } setInterval(queryDatabase, 1000);
+ 
 
 app.listen(port, () => {
   console.log(`Running on port ${port}`);
