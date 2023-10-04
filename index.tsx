@@ -114,7 +114,6 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 
   try {
     const ticketChunk = await expo.sendPushNotificationsAsync(messages);
-    console.log(tokens)
     console.log("push notifications sent", ticketChunk);
   } catch (error) {
     console.error('Error sending push notifications:', error);
@@ -134,7 +133,6 @@ async function queryDatabaseAndPerformActions() {
         const tokens = await postgresService.getExpoPushTokens(player_id, related_id)
         sendNotifications(tokens, latestEvent);
         processedEventIDs.add(id);
-        console.log(processedEventIDs)
       } else {
       }
     } else { 
@@ -144,7 +142,7 @@ async function queryDatabaseAndPerformActions() {
   } catch (error) {
     console.error('Error querying the database:', error);
   }
-} setInterval(queryDatabaseAndPerformActions, 490);
+} setTimeout(queryDatabaseAndPerformActions, 2000);
 
 
 app.listen(port, () => {
