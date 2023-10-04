@@ -19,7 +19,6 @@ const dbs = pgps({
   },
 });
 
-
 app.post('/registerNotifications', jsonParser, async (req, res) => {
   const teamId = Number(req.body.teamId);
   const token = String(req.body.token);
@@ -28,8 +27,6 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
   await postgresService.saveToken(teamId, token, notificationEnabled);
   res.status(200).json({ message: 'success' });
 });
-
-
 
 app.post('/getToken', jsonParser, async (req, res) => {
   const expoPushToken = String(req.body.expoPushToken);
@@ -127,21 +124,23 @@ async function queryDatabase() {
       console.log("Querying already......");
       return;
     };
-
     isProcessing = true;
-
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
-    const id = latestEvent[0].id;
 
-    if (id && !processedEventIDs.has(id)) {
-      const player_id = latestEvent[0].player_id;
-      const related_id = latestEvent[0].related_id;
-      const tokens = await postgresService.getExpoPushTokens(player_id, related_id);
+    if (latestEvent) {
+        const id = latestEvent[0].id;
+        if (!processedEventIDs.has(id)) {
+          const player_id = latestEvent[0].player_id;
+          const related_id = latestEvent[0].related_id;
+          const tokens = await postgresService.getExpoPushTokens(player_id, related_id);
 
-      sendNotifications(tokens, latestEvent);
-      processedEventIDs.add(id);
+          sendNotifications(tokens, latestEvent);
+          processedEventIDs.add(id);
+        } else {
+          console.log(id, "already logged");
+        }
     } else {
-      console.log(id, "already logged or no id to log");
+      console.log("no event");
     }
   } catch (error) {
     console.log(error);
