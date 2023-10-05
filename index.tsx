@@ -57,47 +57,67 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
     10: {
       title: `${match_name} - (${minute}' min)`,
       body: `${event_name} - ${addition} (${player_name})`,
+      priority: 'high',
+      sound: 'default'
     },
     14: {
       title: `${match_name} - (${minute}' min)`,
       body: related_player_name
         ? `GOAL for ${player_name} (ASSIST: ${related_player_name})`
         : `GOAL for ${player_name}`,
+      priority: 'high',
+      sound: 'default'
     },
     15: {
       title: `${match_name} - (${minute}' min)`,
       body: `${event_name} for ${player_name}`,
+      priority: 'high',
+      sound: 'default'
     },
     16: {
       title: `${match_name} - (${minute}' min)`,
       body: `${event_name} by ${player_name}`,
+      priority: 'high',
+      sound: 'default'
     },
     17: {
       title: `${match_name} - (${minute}' min)`,
       body: `${event_name} by ${player_name}`,
+      priority: 'high',
+      sound: 'default'
     },
     18: {
       title: `${match_name} - Subsitute (${minute}' min)`,
       body: `${player_name} ON - ${related_player_name} OFF`,
+      priority: 'high',
+      sound: 'default'
     },
     19: {
       title: `${match_name} - (${minute}' min)`,
       body: `${event_name} for ${player_name}`,
+      priority: 'high',
+      sound: 'default'
     },
     20: {
       title: `${match_name} - (${minute}' min)`,
       body: `${event_name} for ${player_name}`,
+      priority: 'high',
+      sound: 'default'
     },
     21: {
       title: `${match_name} - (${minute}' min)`,
       body: `${event_name} for ${player_name}`,
+      priority: 'high',
+      sound: 'default'
     }
   };
-
-  const { title: notificationTitle, body: notificationBody } =
+  
+  const { title: notificationTitle, body: notificationBody, priority: notificationPriority, sound: notificationSound } =
     notificationMappings[type_id] || {
       title: `${match_name} - (${minute}' min)`,
       body: `Unknown event for ${player_name}`,
+      priority: 'high',
+      sound: 'default'
     };
 
   for (let i = 0; i < tokens.length; i += maxBatchSize) {
@@ -106,6 +126,8 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
       to: token,
       title: notificationTitle,
       body: notificationBody,
+      priority: notificationPriority,
+      sound: notificationSound
     }));
   try {
     const ticketChunk = await expo.sendPushNotificationsAsync(messages);
@@ -124,9 +146,7 @@ async function queryDatabase() {
       console.log("Querying already......");
       return;
     };
-
     isProcessing = true;
-
     const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
     const id = latestEvent[0].id;
 
