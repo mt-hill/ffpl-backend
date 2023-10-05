@@ -117,7 +117,8 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
       title: `${match_name} - (${minute}' min)`,
       body: `Unknown event for ${player_name}`,
       priority: 'high',
-      sound: 'default'
+      sound: 'default',
+
     };
 
   for (let i = 0; i < tokens.length; i += maxBatchSize) {
@@ -127,7 +128,8 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
       title: notificationTitle,
       body: notificationBody,
       priority: notificationPriority,
-      sound: notificationSound
+      sound: notificationSound,
+      channelId: 'default'
     }));
   try {
     const ticketChunk = await expo.sendPushNotificationsAsync(messages);
