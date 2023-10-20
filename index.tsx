@@ -42,6 +42,37 @@ app.post('/getToken', jsonParser, async (req, res) => {
   }
 });
 
+////// events notifications scripts \\\\\\
+
+const processedEventIDs = new Set();
+let isProcessing = false;
+
+async function queryDatabase() {
+  try {
+    if (isProcessing) {
+      console.log("Querying already......");
+      return;
+    };
+    isProcessing = true;
+    const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
+    const id = latestEvent[0].id;
+
+    if (id && !processedEventIDs.has(id)) {
+      const player_id = latestEvent[0].player_id;
+      const related_id = latestEvent[0].related_id;
+      const tokens = await postgresService.getExpoPushTokens(player_id, related_id);
+
+      sendNotifications(tokens, latestEvent);
+      processedEventIDs.add(id);
+    } else {
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    isProcessing = false;
+  }
+ } setInterval(queryDatabase, 1000);
+
 const sendNotifications = async (tokens: string[], latestEvent: string []) => {
   const maxBatchSize = 100;
   const event = latestEvent[0]; 
@@ -109,7 +140,7 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
       body: `${event_name} for ${player_name}`,
       priority: 'high',
       sound: 'default'
-    }
+    },
   };
   
   const { title: notificationTitle, body: notificationBody, priority: notificationPriority, sound: notificationSound } =
@@ -139,36 +170,6 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
   }}
 };
 
-const processedEventIDs = new Set();
-let isProcessing = false;
-
-async function queryDatabase() {
-  try {
-    if (isProcessing) {
-      console.log("Querying already......");
-      return;
-    };
-    isProcessing = true;
-    const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
-    const id = latestEvent[0].id;
-
-    if (id && !processedEventIDs.has(id)) {
-      const player_id = latestEvent[0].player_id;
-      const related_id = latestEvent[0].related_id;
-      const tokens = await postgresService.getExpoPushTokens(player_id, related_id);
-
-      sendNotifications(tokens, latestEvent);
-      processedEventIDs.add(id);
-    } else {
-      console.log(id, "already logged or no id to log");
-    }
-  } catch (error) {
-    console.log(error);
-  } finally {
-    isProcessing = false;
-  }
- } setInterval(queryDatabase, 1000);
- 
 
 app.listen(port, () => {
   console.log(`Running on port ${port}`);

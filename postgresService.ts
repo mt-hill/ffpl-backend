@@ -2,7 +2,6 @@ import pgPromise from "pg-promise";
 const axios = require('axios');
 const pgp = pgPromise();
 const connectionString = process.env.DB_CONNECTION_STRING
-//const connectionString = 'postgresql://flashfpldb_user:jFhDJIJJ3C3KzhirjH5FGiCQutwnK3HA@dpg-ck1gvoeru70s73dpd9q0-a.frankfurt-postgres.render.com/flashfpldb';
 const apiConnectionString = process.env.API_CONNECTION_STRING
 const db = pgp({
   connectionString: connectionString,
@@ -23,16 +22,46 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
         token,
       ]);
     } else {
-      console.log("token doesnt exist, record added")
-      await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
-        teamId,
-        token,
-        notificationEnabled,
-        null, 
-      ]);
+      const elements = await fetchPlayerPicksAndSave(teamId);
+      if (elements !== null) {
+        await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
+          teamId,
+          token,
+          notificationEnabled,
+          elements
+        ]);
+        console.log("token doesnt exist, all record added");
+      } else {
+        await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
+          teamId,
+          token,
+          notificationEnabled,
+          null 
+        ]);
+        console.log("token doesnt exist, record added without player picks");
+      }
     }
   } catch (error) {
     console.error('Error saving token:', error);
+  }
+};
+
+const fetchPlayerPicksAndSave = async (teamId: Number) => {
+    const apiUrl = `https://fantasy.premierleague.com/api/entry/${teamId}/event/9/picks/`;
+    try {
+      const response = await axios.get(apiUrl);
+
+      if (response.status === 200) {
+          const picks = response.data.picks;
+          const elements = picks.map((pick: { element: any; }) => pick.element);
+          const elementsJSON = JSON.stringify(elements);
+          
+          return elementsJSON
+      } else {
+          return null;
+      }
+  } catch (error) {
+      return null;
   }
 };
 
@@ -86,8 +115,6 @@ interface EventData {
 }
 
 const apiUrl = apiConnectionString;
-//const apiUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/2023-09-29/2023-09-30?api_token=GEN2BiwqhnXlX0yb5vF1LKEgylNZv8g8TgYqSP2m3ywdgzda0xjQjmrWBGEw&include=events;'
-
 let loggedEventIds: number[] = [];
 
 async function fetchAndInsertEvents() {
@@ -110,7 +137,7 @@ async function fetchAndInsertEvents() {
 
                   setTimeout(() => {
                       checkAPIForId(id);
-                  }, 15000);
+                  }, 45000);
                   await new Promise(resolve => setTimeout(resolve, 1000));
               } 
           }
@@ -122,8 +149,6 @@ async function fetchAndInsertEvents() {
 } fetchAndInsertEvents();
 
 async function checkAPIForId(id: number) {
-  const currentTime = new Date().toLocaleTimeString();
-
   try {
       const response = await axios.get(apiUrl);
       const eventData = response.data.data;
@@ -137,12 +162,6 @@ async function checkAPIForId(id: number) {
                   if (event.id === id) {
                       const {
                           type_id,
-                          player_name,
-                          related_player_name,
-                          minute,
-                          result,
-                          id,
-                          addition
                       } = event;
                       const event_name = (typeMapping as any)[type_id] || 'Unknown';
                       const match_Name = matchName
@@ -197,7 +216,7 @@ export const CheckAndInsert = async (event: EventData, event_name: string, match
       else {
           await db.oneOrNone(
               'UPDATE events SET match_name = $1, type_id = $2, event_name = $3, addition = $4, player_name = $5, player_id = $6, related_player_name = $7, related_id = $8, minute = $9, result = $10 WHERE smid = $11',
-              [match_Name, eventData.type_id, event_name, eventData.addition, trimmedPlayerName, player_id, trimmedRelatedPlayerName, related_id, eventData.minute, eventData.result, eventData.id]
+              [match_Name, eventData.type_id, event_name, "Updated Event", trimmedPlayerName, player_id, trimmedRelatedPlayerName, related_id, eventData.minute, eventData.result, eventData.id]
           );
           console.log("event successfully updated ", currentTime, eventData.id);
           await new Promise(resolve => setTimeout(resolve, 1000));
