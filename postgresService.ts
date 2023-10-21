@@ -28,7 +28,7 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
           teamId,
           token,
           notificationEnabled,
-          elements
+          JSON.stringify(elements)
         ]);
         console.log("token doesnt exist, all record added");
       } else {
@@ -54,9 +54,8 @@ const fetchPlayerPicksAndSave = async (teamId: Number) => {
       if (response.status === 200) {
           const picks = response.data.picks;
           const elements = picks.map((pick: { element: any; }) => pick.element);
-          const elementsJSON = JSON.stringify(elements);
           
-          return elementsJSON
+          return elements
       } else {
           return null;
       }

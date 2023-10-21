@@ -86,7 +86,7 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 
   const notificationMappings = {
     10: {
-      title: `${match_name} - (${minute}' min)`,
+      title: `${match_name}  - (${minute}' min)`,
       body: `${event_name} - ${addition} (${player_name})`,
       priority: 'high',
       sound: 'default'
@@ -94,7 +94,7 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
     14: {
       title: `${match_name} - (${minute}' min)`,
       body: related_player_name
-        ? `GOAL for ${player_name} (ASSIST: ${related_player_name})`
+        ? `GOAL for ${player_name} (Assist: ${related_player_name})`
         : `GOAL for ${player_name}`,
       priority: 'high',
       sound: 'default'
