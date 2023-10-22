@@ -22,24 +22,24 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
         token,
       ]);
     } else {
-     // const elements = await fetchPlayerPicksAndSave(teamId);
-      //if (elements !== null) {
+     const elements = await fetchPlayerPicksAndSave(teamId);
+      if (elements !== null) {
         await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
           teamId,
           token,
           notificationEnabled,
-          null
+          elements
         ]);
         console.log("token doesnt exist, all record added");
-      //} else {
-       // await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
-       //   teamId,
-       //   token,
-       //   notificationEnabled,
-       //   null 
-       // ]);
-       // console.log("token doesnt exist, record added without player picks");
-      //}
+      } else {
+          await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
+          teamId,
+          token,
+          notificationEnabled,
+          null 
+        ]);
+        console.log("token doesnt exist, record added without player picks");
+      }
     }
   } catch (error) {
     console.error('Error saving token:', error);
