@@ -8,7 +8,6 @@ const port = 8000;
 const expo = new Expo();
 const jsonParser = BodyParser.json();
 const connectionString = process.env.DB_CONNECTION_STRING
-//const connectionString = 'postgresql://flashfpldb_user:jFhDJIJJ3C3KzhirjH5FGiCQutwnK3HA@dpg-ck1gvoeru70s73dpd9q0-a.frankfurt-postgres.render.com/flashfpldb';
 
 const pgPromises = require ('pg-promise')
 const pgps = pgPromises();
@@ -86,58 +85,70 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 
   const notificationMappings = {
     10: {
-      title: `${match_name}  - (${minute}' min)`,
-      body: `${event_name} - ${addition} (${player_name})`,
+      title: `[VAR] ${match_name} (${minute}' min)`,
+      body: ` ${addition} (${player_name})`,
+      priority: 'high',
+      sound: 'default'
+    },
+    11: {
+      title: ` ${match_name} (${minute}' min)`,
+      body: `[Correction] Assist awarded to - ${related_player_name}`,
+      priority: 'high',
+      sound: 'default'
+    },
+    12: {
+      title: `${match_name} (${minute}' min)`,
+      body: `[Correction] ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     14: {
-      title: `${match_name} - (${minute}' min)`,
+      title: `[${result}] ${match_name} (${minute}' min)`,
       body: related_player_name
-        ? `GOAL for ${player_name} (Assist: ${related_player_name})`
-        : `GOAL for ${player_name}`,
+        ? `Scorer - ${player_name} (Assist - ${related_player_name})`
+        : `Scorer - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     15: {
-      title: `${match_name} - (${minute}' min)`,
-      body: `${event_name} for ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     16: {
-      title: `${match_name} - (${minute}' min)`,
-      body: `${event_name} by ${player_name}`,
+      title: `[${result}] ${match_name} (${minute}' min)`,
+      body: `${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     17: {
-      title: `${match_name} - (${minute}' min)`,
-      body: `${event_name} by ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     18: {
-      title: `${match_name} - Subsitute (${minute}' min)`,
-      body: `${player_name} ON - ${related_player_name} OFF`,
+      title: `${match_name} - SUB (${minute}' min)`,
+      body: `On: ${player_name} | Off: ${related_player_name}`,
       priority: 'high',
       sound: 'default'
     },
     19: {
-      title: `${match_name} - (${minute}' min)`,
-      body: `${event_name} for ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     20: {
-      title: `${match_name} - (${minute}' min)`,
-      body: `${event_name} for ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     21: {
-      title: `${match_name} - (${minute}' min)`,
-      body: `${event_name} for ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `${event_name}: ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
@@ -152,7 +163,8 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 
     };
 
-  for (let i = 0; i < tokens.length; i += maxBatchSize) {
+
+  for (let i = 0; i < tokens.length; i += maxBatchSize) { // NOTIFICATIONS SENT IN BATCHES OF 100 (MAXIMUM EXPO ALLOWS)
     const batchTokens = tokens.slice(i, i + maxBatchSize);
     const messages = batchTokens.map(token => ({
       to: token,
@@ -162,12 +174,14 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
       sound: notificationSound,
       channelId: 'default'
     }));
-  try {
-    const ticketChunk = await expo.sendPushNotificationsAsync(messages);
-    console.log("push notifications sent", ticketChunk);
-  } catch (error) {
-    console.error('Error sending push notifications:', error);
-  }}
+    try {
+      const ticketChunk = await expo.sendPushNotificationsAsync(messages);
+      console.log("push notifications sent", ticketChunk);
+    } catch (error) {
+      console.error('Error sending push notifications:', error);
+    }
+    await new Promise(resolve => setTimeout(resolve, 200)); // 200ms timeout to prevent sending over 600 in a second (MAXIMUM EXPO ALLOWS)
+  };
 };
 
 
