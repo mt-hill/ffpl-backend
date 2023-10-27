@@ -92,7 +92,7 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
     },
     11: {
       title: ` ${match_name} (${minute}' min)`,
-      body: `[Correction] Assist awarded to - ${related_player_name}`,
+      body: `[Correction] Assist awarded to - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
