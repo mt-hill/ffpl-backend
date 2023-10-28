@@ -238,44 +238,16 @@ async function CheckAndInsert(event: EventData, event_name: string, match_Name: 
               eventData.minute
           ]);
       const correction = await db.oneOrNone('SELECT * from events WHERE smid = $1', [eventData.id]);
-      const subplayer = await db.oneOrNone('SELECT * from events where type_id = $1 AND match_name = $2 AND minute = $3 AND player_id = $4', [18, match_Name, eventData.minute, player_id]);
-      const subrelated = await db.oneOrNone('SELECT * from events where type_id = $1 AND match_name = $2 AND minute = $3 AND related_id = $4', [18, match_Name, eventData.minute, related_id]);
+
       // STEP 3. INSERT OR IGNORE RELEVENT EVENTS
       if (duplicate == null && correction == null) { // check to see if its not a dupe or correction
-        if (eventData.type_id !== 18) { // then check to see if its not a sub === standard insert
+         // then check to see if its not a sub === standard insert
           await db.none(
               'INSERT INTO events (match_name, type_id, event_name, addition, player_name, player_id, related_player_name, related_id, minute, result, smid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
               [match_Name, eventData.type_id, event_name, eventData.addition, trimmedPlayerName, player_id, trimmedRelatedPlayerName, related_id, eventData.minute, eventData.result, eventData.id]
           );
           console.log("event successfully logged ", currentTime, eventData.id);
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } 
-        else if (eventData.type_id == 18) { // if its a sub 
-            if(subplayer.player_id == player_id) { //check to see if player name is duplicated, insert without player id
-              await db.none(
-                'INSERT INTO events (match_name, type_id, event_name, addition, player_name, player_id, related_player_name, related_id, minute, result, smid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-                [match_Name, eventData.type_id, event_name, eventData.addition, trimmedPlayerName, null, trimmedRelatedPlayerName, related_id, eventData.minute, eventData.result, eventData.id]
-              );
-              console.log("event successfully logged ", currentTime, eventData.id);
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            } else if (subrelated.related_id == related_id){
-              await db.none(
-                'INSERT INTO events (match_name, type_id, event_name, addition, player_name, player_id, related_player_name, related_id, minute, result, smid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-                [match_Name, eventData.type_id, event_name, eventData.addition, trimmedPlayerName, player_id, trimmedRelatedPlayerName, null, eventData.minute, eventData.result, eventData.id]
-              );
-              console.log("event successfully logged ", currentTime, eventData.id);
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            } else if (subplayer.player_id == related_id || subplayer.related_id == player_id) {
-                ////////////////IGNORE 
-            } else {
-              await db.none(
-                'INSERT INTO events (match_name, type_id, event_name, addition, player_name, player_id, related_player_name, related_id, minute, result, smid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-                [match_Name, eventData.type_id, event_name, eventData.addition, trimmedPlayerName, player_id, trimmedRelatedPlayerName, related_id, eventData.minute, eventData.result, eventData.id]
-            );
-            console.log("event successfully logged ", currentTime, eventData.id);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            };
-          };
+          await new Promise(resolve => setTimeout(resolve, 1000)); 
       } else if (correction !== null) { // if it exists and goal type, fix assist
           if (correction.related_player_name == null && correction.related_player_name !== trimmedRelatedPlayerName) { // null to player
               await db.none(
