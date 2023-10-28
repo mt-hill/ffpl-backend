@@ -90,70 +90,64 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 
   const notificationMappings = {
     10: {
-      title: `[VAR] ${match_name} (${minute}' min)`,
+      title: `🎥 [VAR] ${match_name} (${minute}' min)`,
       body: ` ${addition} (${player_name})`,
       priority: 'high',
       sound: 'default'
     },
     11: {
-      title: ` ${match_name} (${minute}' min)`,
-      body: `[Correction] Assist awarded to - ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    12: {
-      title: `${match_name} (${minute}' min)`,
-      body: `[Correction] ${event_name} - ${player_name}`,
+      title: `⚠️ ${match_name} (${minute}' min)`,
+      body: `[Correction] 🅰️ssist awarded to - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     14: {
       title: `[${result}] ${match_name} (${minute}' min)`,
       body: related_player_name
-        ? `Scorer - ${player_name} (Assist - ${related_player_name})`
-        : `Scorer - ${player_name}`,
+        ? `⚽ Scorer - ${player_name} (🅰️ssist - ${related_player_name})`
+        : `⚽ Scorer - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     15: {
-      title: `${match_name} (${minute}' min)`,
+      title: `☠️ ${match_name} (${minute}' min)`,
       body: `${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     16: {
       title: `[${result}] ${match_name} (${minute}' min)`,
-      body: `${event_name} - ${player_name}`,
+      body: `⚽ ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     17: {
       title: `${match_name} (${minute}' min)`,
-      body: `${event_name} - ${player_name}`,
+      body: `❌ ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     18: {
-      title: `${match_name} - SUB (${minute}' min)`,
+      title: `🔀 ${match_name} - SUB (${minute}' min)`,
       body: `On: ${player_name} | Off: ${related_player_name}`,
       priority: 'high',
       sound: 'default'
     },
     19: {
-      title: `${match_name} (${minute}' min)`,
+      title: `🟨 ${match_name} (${minute}' min)`,
       body: `${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     20: {
       title: `${match_name} (${minute}' min)`,
-      body: `${event_name} - ${player_name}`,
+      body: `🟥 ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     21: {
       title: `${match_name} (${minute}' min)`,
-      body: `${event_name}: ${player_name}`,
+      body: `🟨🟨 ${event_name}: ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
