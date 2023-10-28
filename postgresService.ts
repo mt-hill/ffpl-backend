@@ -19,7 +19,7 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
     if (existingToken) {
       console.log("token exists, record updated")
       const element = await fetchPlayerPicksAndSave(teamId)
-      await db.none('UPDATE users SET team_id = $1, notifications_enabled = $2, player_picks = $3, WHERE token = $4', [
+      await db.none('UPDATE users SET team_id = $1, notifications_enabled = $2, player_picks = $3 WHERE token = $4', [
         teamId,
         notificationEnabled,
         element,
