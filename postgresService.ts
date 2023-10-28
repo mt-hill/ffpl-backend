@@ -18,15 +18,17 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
 
     if (existingToken) {
       console.log("token exists, record updated")
-      await db.none('UPDATE users SET team_id = $1, notifications_enabled = $2 WHERE token = $3', [
+      const element = await fetchPlayerPicksAndSave(teamId)
+      await db.none('UPDATE users SET team_id = $1, notifications_enabled = $2, player_picks = $3, WHERE token = $4', [
         teamId,
         notificationEnabled,
+        element,
         token,
       ]);
     } else {
      const elements = await fetchPlayerPicksAndSave(teamId);
       if (elements !== null) {
-        await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
+          await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
           teamId,
           token,
           notificationEnabled,
@@ -319,7 +321,7 @@ async function compareData () {
             const VARcor = dbe.type_id == 10 && dbe.addition !== apie.addition;
             const assistTBA = dbe.type_id == 14 && dbe.smid == apie.id && dbe.related_player_name !== apie.related_player_name && dbe.addition !== 'CORRECTION';
             
-            if (assistTBA && !loggedCorrected.includes(id)) {  
+            if (assistTBA && !loggedCorrected.includes(apie.id)) {  
               const event_name = dbe.event_name;
               const match_name = dbe.match_name;
               const event = apie;
