@@ -27,15 +27,9 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
   res.status(200).json({ message: 'success' });
 });
 
-app.post('/gameweek', async (req, res) => {
-  try {
-    const gameweek = await dbs.any('SELECT gameweek from gameweek'); // Modify this query according to your data structure
-    console.log(gameweek)
-    res.json(gameweek);
-  } catch (error) {
-    console.error('Error fetching gameweek data:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+app.get('/gameweek', (req, res) => {
+  const gameweek = 10;
+  res.json(gameweek);
 });
 
 app.post('/getToken', jsonParser, async (req, res) => {
