@@ -250,7 +250,7 @@ async function CheckAndInsert(event: EventData, event_name: string, match_Name: 
           console.log("event successfully logged ", currentTime, eventData.id);
           await new Promise(resolve => setTimeout(resolve, 1000));
         } 
-        else if (eventData.type_id !== 18) { // if its a sub 
+        else if (eventData.type_id == 18) { // if its a sub 
             if(subplayer.player_id == player_id) { //check to see if player name is duplicated, insert without player id
               await db.none(
                 'INSERT INTO events (match_name, type_id, event_name, addition, player_name, player_id, related_player_name, related_id, minute, result, smid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
@@ -265,7 +265,14 @@ async function CheckAndInsert(event: EventData, event_name: string, match_Name: 
               );
               console.log("event successfully logged ", currentTime, eventData.id);
               await new Promise(resolve => setTimeout(resolve, 1000));
-            } else { ///////////////////////////////////////////////////////////////////////////////////////////////////////do nothing, ignore dupes 
+            } else { 
+              await db.none(
+                'INSERT INTO events (match_name, type_id, event_name, addition, player_name, player_id, related_player_name, related_id, minute, result, smid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+                [match_Name, eventData.type_id, event_name, eventData.addition, trimmedPlayerName, player_id, trimmedRelatedPlayerName, related_id, eventData.minute, eventData.result, eventData.id]
+            );
+            console.log("event successfully logged ", currentTime, eventData.id);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+              
             }
           }
   
