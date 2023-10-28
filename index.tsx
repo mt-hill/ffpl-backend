@@ -30,6 +30,7 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
 app.post('/gameweek', async (req, res) => {
   try {
     const gameweek = await dbs.any('SELECT gameweek from gameweek'); // Modify this query according to your data structure
+    console.log(gameweek)
     res.json(gameweek);
   } catch (error) {
     console.error('Error fetching gameweek data:', error);
