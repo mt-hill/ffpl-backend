@@ -26,10 +26,12 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
   await postgresService.saveToken(teamId, token, notificationEnabled);
   res.status(200).json({ message: 'success' });
 });
-app.get('/gameweek', async (req, res) => {
+
+app.post('/gameweek', async (req, res) => {
   try {
-    const gameweekData = await dbs.any('SELECT gameweek from gameweek'); // Modify this query according to your data structure
-    res.json(gameweekData);
+    const gameweekData = await dbs.any('SELECT * from gameweek'); // Modify this query according to your data structure
+    const gw = gameweekData.gameweek;
+    res.json({ gameweek: gw });
   } catch (error) {
     console.error('Error fetching gameweek data:', error);
     res.status(500).json({ error: 'Internal Server Error' });
