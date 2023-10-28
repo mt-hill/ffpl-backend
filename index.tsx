@@ -26,6 +26,15 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
   await postgresService.saveToken(teamId, token, notificationEnabled);
   res.status(200).json({ message: 'success' });
 });
+app.post('/gameweek', async (req, res) => {
+  try {
+    const gameweekData = await dbs.One('SELECT gameweek from gameweek') // Modify this query according to your data structure
+    res.json(gameweekData);
+  } catch (error) {
+    console.error('Error fetching gameweek data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.post('/getToken', jsonParser, async (req, res) => {
   const expoPushToken = String(req.body.expoPushToken);
