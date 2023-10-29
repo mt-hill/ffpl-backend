@@ -90,64 +90,64 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
 
   const notificationMappings = {
     10: {
-      title: `🎥 [VAR] ${match_name} (${minute}' min)`,
+      title: `🎥[VAR] ${match_name} (${minute}' min)`,
       body: ` ${addition} (${player_name})`,
       priority: 'high',
       sound: 'default'
     },
     11: {
-      title: `⚠️ [Correction] ${match_name} (${minute}' min)`,
+      title: `⚠️[Correction] ${match_name} (${minute}' min)`,
       body: ` 🅰️ssist awarded to - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     14: {
-      title: `⚽ ${match_name} [${result}] (${minute}' min)`,
+      title: ` ${match_name} [${result}] (${minute}' min)`,
       body: related_player_name
-        ? `Scorer - ${player_name} (🅰️ssist - ${related_player_name})`
-        : `Scorer - ${player_name}`,
+        ? `⚽ Scorer - ${player_name} (🅰️ssist - ${related_player_name})`
+        : `⚽ Scorer - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     15: {
-      title: `☠️ ${match_name} (${minute}' min)`,
-      body: `${event_name} - ${player_name}`,
+      title: ` ${match_name} (${minute}' min)`,
+      body: `☠️ ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     16: {
-      title: `⚽${match_name} [${result}] (${minute}' min)`,
-      body: `${event_name} - ${player_name}`,
+      title: `${match_name} [${result}] (${minute}' min)`,
+      body: `⚽ ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     17: {
-      title: `❌ ${match_name} (${minute}' min)`,
-      body: `${event_name} - ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `❌ ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     18: {
-      title: `🔀 [SUB] - ${match_name} (${minute}' min)`,
-      body: `On: ${player_name} | Off: ${related_player_name}`,
+      title: `🔁[SUB] - ${match_name} (${minute}' min)`,
+      body: `🟢ON: ${player_name} | 🔴OFF: ${related_player_name}`,
       priority: 'high',
       sound: 'default'
     },
     19: {
-      title: `🟨 ${match_name} (${minute}' min)`,
-      body: `${event_name} - ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `🟨 ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     20: {
-      title: `🟥 ${match_name} (${minute}' min)`,
-      body: `${event_name} - ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `🟥 ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     21: {
-      title: `🟨🟨 ${match_name} (${minute}' min)`,
-      body: `${event_name}: ${player_name}`,
+      title: `${match_name} (${minute}' min)`,
+      body: `🟨🟨 ${event_name}: ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
