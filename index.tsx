@@ -110,7 +110,7 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
       sound: 'default'
     },
     15: {
-      title: ` ${match_name} (${minute}' min)`,
+      title: `${match_name} (${minute}' min)`,
       body: `☠️ ${event_name} - ${player_name}`,
       priority: 'high',
       sound: 'default'
