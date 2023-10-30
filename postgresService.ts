@@ -57,7 +57,7 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
       }
     }
   } catch (error) {
-    console.error('Error saving token:', error);
+    
   }
 };
 //fetch new user player_picks and return to function above
