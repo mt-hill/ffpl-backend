@@ -15,9 +15,10 @@ const db = pgp({
 export const saveToken = async (teamId: Number, token: string, notificationEnabled: Boolean) => {
   try {
     const existingToken = await db.oneOrNone('SELECT token FROM users WHERE token = $1', [token]);
-    const elements = await fetchPlayerPicksAndSave(teamId)
+    
 
-    if (existingToken) {
+    if (existingToken) { //existing user
+      const elements = await fetchPlayerPicksAndSave(teamId);
       if (elements !== null) {
         console.log("token exists, record updated")
         await db.one('UPDATE users SET team_id = $1, notifications_enabled = $2, player_picks = $3 WHERE token = $4', [
@@ -27,7 +28,7 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
           token,
         ]);
       } else {
-        console.log("token exists, record updated")
+        console.log("token exists, record updated without player picks")
         await db.one('UPDATE users SET team_id = $1, notifications_enabled = $2, player_picks = $3 WHERE token = $4', [
           teamId,
           notificationEnabled,
@@ -35,7 +36,8 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
           token,
         ]);
       };
-    } else {
+    } else { // new users
+      const elements = await fetchPlayerPicksAndSave(teamId);
       if (elements !== null) {
           await db.none('INSERT INTO users (team_id, token, notifications_enabled, player_picks) VALUES ($1, $2, $3, $4)', [
           teamId,
