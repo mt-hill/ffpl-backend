@@ -19,7 +19,7 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
 
     if (existingToken) {
       console.log("token exists, record updated")
-      await db.none('UPDATE users SET team_id = $1, notifications_enabled = $2, player_picks = $3 WHERE token = $4', [
+      await db.one('UPDATE users SET team_id = $1, notifications_enabled = $2, player_picks = $3 WHERE token = $4', [
         teamId,
         notificationEnabled,
         elements,
@@ -50,7 +50,7 @@ export const saveToken = async (teamId: Number, token: string, notificationEnabl
 };
 //fetch new user player_picks and return to function above
 const fetchPlayerPicksAndSave = async (teamId: Number) => {
-    const apiUrl = `https://fantasy.premierleague.com/api/entry/${teamId}/event/10/picks/`;
+    const apiUrl = `https://fantasy.premierleague.com/api/entry/${teamId}/event/11/picks/`;
     try {
       const response = await axios.get(apiUrl);
 

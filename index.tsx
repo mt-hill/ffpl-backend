@@ -28,7 +28,7 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
 });
 
 app.get('/gameweek', (req, res) => {
-  const gameweek = 10;
+  const gameweek = 11;
   res.json(gameweek);
 });
 
