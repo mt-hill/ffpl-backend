@@ -566,7 +566,7 @@ async function checkFT() { //checks full time clean sheets
                                   if (subbed || sent || senttwo || subbedon){
                                       //ignore
                                  } else {
-                                      const event = {  type_id: 40, fixture_id: 0, participant_id: 0, addition: "CS CONFIRMED", player_name: player, related_player_name: 'null', minute: 90, result: 'null', id: csconfirmedid};
+                                      const event = {  type_id: 50, fixture_id: 0, participant_id: 0, addition: "CS CONFIRMED", player_name: player, related_player_name: 'null', minute: 90, result: 'null', id: csconfirmedid};
                                       const match_Name = g.name;
                                       const event_name = "Cleansheet Lost" 
                                       CheckAndInsert(event, event_name, match_Name);
@@ -599,7 +599,7 @@ async function checkFT() { //checks full time clean sheets
                                   if (subbed || sent || senttwo || subbedon){
                                       //ignore
                                    } else {
-                                      const event = { type_id: 40, fixture_id: 0, participant_id: 0, addition: "CS CONFIRMED", player_name: player, related_player_name: 'null', minute: 90, result: 'null', id: csconfirmedid};
+                                      const event = { type_id: 50, fixture_id: 0, participant_id: 0, addition: "CS CONFIRMED", player_name: player, related_player_name: 'null', minute: 90, result: 'null', id: csconfirmedid};
                                       const match_Name = g.name;
                                       const event_name = "Cleansheet Lost" 
                                       CheckAndInsert(event, event_name, match_Name);
