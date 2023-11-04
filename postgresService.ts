@@ -154,7 +154,7 @@ async function fetchAndInsertEvents() {
 
                   setTimeout(() => {
                       checkAPIForId(id);
-                  }, 35000);
+                  }, 50000);
                   await new Promise(resolve => setTimeout(resolve, 1000));
               } 
           }
@@ -484,13 +484,6 @@ async function compareData () { //this function checks for discrepencies and sen
               CheckAndInsert(event, event_name, match_name);
               await new Promise(resolve => setTimeout(resolve, 1000));
               
-            } else if (plaTBA) {
-                const event_name = dbe.event_name;
-                const match_name = dbe.match_name;
-                const event = apie;
-                CheckAndInsert(event, event_name, match_name);
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
             } else if (VARcor) { 
               const index = loggedEventIds.indexOf(dbe.smid);
               if (index > -1) { 
