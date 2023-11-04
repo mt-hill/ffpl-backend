@@ -151,6 +151,24 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
       priority: 'high',
       sound: 'default'
     },
+    30: {
+      title: `${match_name} (${minute}' min)`,
+      body: `❌ ${event_name}: ${player_name}`,
+      priority: 'high',
+      sound: 'default'
+    },
+    40: {
+      title: `${match_name} (${minute}' min)`,
+      body: `🛡️ ${event_name}: ${player_name}`,
+      priority: 'high',
+      sound: 'default'
+    },
+    50: {
+      title: `${match_name} [FULL-TIME]`,
+      body: `🛡️ ${event_name}: ${player_name}`,
+      priority: 'high',
+      sound: 'default'
+    }
   };
   
   const { title: notificationTitle, body: notificationBody, priority: notificationPriority, sound: notificationSound } =
