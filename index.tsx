@@ -153,19 +153,19 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
     },
     30: {
       title: `${match_name} (${minute}' min)`,
-      body: `❌ ${event_name}: ${player_name}`,
+      body: `❌ Cleansheet Lost: ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     40: {
       title: `${match_name} (${minute}' min)`,
-      body: `🛡️ ${event_name}: ${player_name}`,
+      body: `🛡️ Cleansheet Confirmed: ${player_name}`,
       priority: 'high',
       sound: 'default'
     },
     50: {
       title: `${match_name} [FULL-TIME]`,
-      body: `🛡️ ${event_name}: ${player_name}`,
+      body: `🛡️ Cleansheet Confirmed: ${player_name}`,
       priority: 'high',
       sound: 'default'
     }
