@@ -232,7 +232,7 @@ async function CheckAndInsert(event: EventData, event_name: string, match_Name: 
     const correction = await db.oneOrNone('SELECT * FROM events WHERE smid = $1', [eventData.id]);
     
     try {
-      if (duplicate == null && correction == null) { // check to see if its not a dupe or correction
+      if (!duplicate && !correction) { // check to see if its not a dupe or correction
           await db.none(
               'INSERT INTO events (match_name, type_id, event_name, addition, player_name, player_id, related_player_name, related_id, minute, result, smid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
               [match_Name, eventData.type_id, event_name, eventData.addition, trimmedPlayerName, player_id, trimmedRelatedPlayerName, related_id, eventData.minute, eventData.result, eventData.id]
@@ -255,7 +255,7 @@ async function CheckAndInsert(event: EventData, event_name: string, match_Name: 
             //if its anything else, ignore it
           };
           await new Promise(resolve => setTimeout(resolve, 1500));
-      } else if (correction !== null) { // if it exists and goal type, fix assist
+      } else if (correction) { // if it exists and goal type, fix assist
         const lastcorrection = await db.oneOrNone('SELECT smid FROM events WHERE addition = $1 ORDER BY id DESC LIMIT 1', ['CORRECTION']);
         let correctionid = !lastcorrection ? 10000 : lastcorrection.smid + 1;
 
@@ -477,7 +477,6 @@ async function compareData () { //this function checks for discrepencies and sen
 
             
             if (assistTBA) {  
-              console.log("correct found")
               const event_name = dbe.event_name;
               const match_name = dbe.match_name;
               const event = apie;
