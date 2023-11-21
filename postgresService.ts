@@ -89,6 +89,7 @@ async function controller(){
           await loadDB();
           await updateUsersPlayerPicks(); 
           updated = true;
+          console.log("db updated for gw", gameweek);
         };
 
         const gwInplay = await checkInplay();
