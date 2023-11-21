@@ -1,22 +1,14 @@
 import express from 'express';
-import Expo from 'expo-server-sdk';
+import Expo, { ExpoPushMessage } from 'expo-server-sdk';
 import BodyParser from 'body-parser';
-import * as postgresService from './postgresService'
-
+import * as postgresService from './postgresService';
+import db from './dbCon';
 const app = express();
 const port = 8000;
 const expo = new Expo();
 const jsonParser = BodyParser.json();
-const connectionString = process.env.DB_CONNECTION_STRING
 
-const pgPromises = require ('pg-promise')
-const pgps = pgPromises();
-const dbs = pgps({
-  connectionString: connectionString,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+//ROUTE FOR FRONTEND
 
 app.post('/registerNotifications', jsonParser, async (req, res) => {
   const teamId = Number(req.body.teamId);
@@ -28,8 +20,8 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
 });
 
 app.get('/gameweek', (req, res) => {
-  const gameweek = 12;
-  res.json(gameweek);
+  const gameweeknum = postgresService.gameweek;
+  res.json(gameweeknum);
 });
 
 app.post('/getToken', jsonParser, async (req, res) => {
@@ -46,151 +38,39 @@ app.post('/getToken', jsonParser, async (req, res) => {
   }
 });
 
-////// events notifications scripts \\\\\\
+////// NOTIFICATION FUNCTIONS
 
-const processedEventIDs = new Set();
-let isProcessing = false;
-
-async function queryDatabase() {
+async function getLatestEvent() {
   try {
-    if (isProcessing) {
-      console.log("Querying already......");
-      return;
+    const levent = await db.one ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
+    
+    if (levent.sent = false) {
+      const id = await db.one ('SELECT elementid FROM playermap WHERE name = $1',[levent.name]);
+      const tokens = await postgresService.getExpoPushTokens(id);
+      await db.one('UPDATE events SET sent = $4 WHERE fixture = $1 AND name = $2 AND event = $3',[levent.fixture, levent.name, levent.event, true])
+      await sendNotifications(tokens, levent);
+      
     };
-    isProcessing = true;
-    const latestEvent = await dbs.any ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
-    const id = latestEvent[0].id;
-
-    if (id && !processedEventIDs.has(id)) {
-      const player_id = latestEvent[0].player_id;
-      const related_id = latestEvent[0].related_id;
-      const tokens = await postgresService.getExpoPushTokens(player_id, related_id);
-
-      sendNotifications(tokens, latestEvent);
-      processedEventIDs.add(id);
-    } else {
-    }
   } catch (error) {
-    console.log(error);
-  } finally {
-    isProcessing = false;
-  }
- } setInterval(queryDatabase, 1000);
-
-const sendNotifications = async (tokens: string[], latestEvent: string []) => {
-  const maxBatchSize = 100;
-  const event = latestEvent[0]; 
-
-  if (!event || typeof event !== 'object') {
-    console.log("Invalid event data.");
-    return;
-  }
-  const { match_name, minute, type_id, event_name, player_name, smid, addition, related_player_name, result} 
-  = event;
-
-  const notificationMappings = {
-    10: {
-      title: `🎥[VAR] ${match_name} (${minute}' min)`,
-      body: ` ${addition} (${player_name})`,
-      priority: 'high',
-      sound: 'default'
-    },
-    11: {
-      title: `⚠️[Correction] ${match_name} (${minute}' min)`,
-      body: ` 🅰️ssist awarded to - ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    14: {
-      title: ` ${match_name} [${result}] (${minute}' min)`,
-      body: related_player_name
-        ? `⚽ Scorer - ${player_name} (🅰️ssist - ${related_player_name})`
-        : `⚽ Scorer - ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    15: {
-      title: `${match_name} (${minute}' min)`,
-      body: `☠️ ${event_name} - ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    16: {
-      title: `${match_name} [${result}] (${minute}' min)`,
-      body: `⚽ ${event_name} - ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    17: {
-      title: `${match_name} (${minute}' min)`,
-      body: `❌ ${event_name} - ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    18: {
-      title: `🔁[SUB] - ${match_name} (${minute}' min)`,
-      body: `🟢ON: ${player_name} | 🔴OFF: ${related_player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    19: {
-      title: `${match_name} (${minute}' min)`,
-      body: `🟨 ${event_name} - ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    20: {
-      title: `${match_name} (${minute}' min)`,
-      body: `🟥 ${event_name} - ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    21: {
-      title: `${match_name} (${minute}' min)`,
-      body: `🟨🟨 ${event_name}: ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    30: {
-      title: `${match_name} (${minute}' min)`,
-      body: `❌ Cleansheet Lost: ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    40: {
-      title: `${match_name} (${minute}' min)`,
-      body: `🛡️ Cleansheet Confirmed: ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    },
-    50: {
-      title: `${match_name} [FULL-TIME]`,
-      body: `🛡️ Cleansheet Confirmed: ${player_name}`,
-      priority: 'high',
-      sound: 'default'
-    }
+    console.log("getLatestEvent()", error);
   };
-  
-  const { title: notificationTitle, body: notificationBody, priority: notificationPriority, sound: notificationSound } =
-    notificationMappings[type_id] || {
-      title: `${match_name} - (${minute}' min)`,
-      body: `Unknown event for ${player_name}`,
-      priority: 'high',
-      sound: 'default',
+ }; setInterval(getLatestEvent, 1000);
 
-    };
-
+const sendNotifications = async (tokens: string[], levent: [{name: string, fixture: string, event: string}]) => {
+  const maxBatchSize = 100;
+  const event = levent[0];
 
   for (let i = 0; i < tokens.length; i += maxBatchSize) { // NOTIFICATIONS SENT IN BATCHES OF 100 (MAXIMUM EXPO ALLOWS)
     const batchTokens = tokens.slice(i, i + maxBatchSize);
-    const messages = batchTokens.map(token => ({
+    const messages: ExpoPushMessage[] = batchTokens.map(token => ({
       to: token,
-      title: notificationTitle,
-      body: notificationBody,
-      priority: notificationPriority,
-      sound: notificationSound,
+      title: `${event.fixture}`,
+      body: `${event.event} for ${event.name}`,
+      priority: 'high',
+      sound: 'default',
       channelId: 'default'
     }));
+
     try {
       const ticketChunk = await expo.sendPushNotificationsAsync(messages);
       console.log("push notifications sent", ticketChunk);
@@ -200,7 +80,6 @@ const sendNotifications = async (tokens: string[], latestEvent: string []) => {
     await new Promise(resolve => setTimeout(resolve, 200)); // 200ms timeout to prevent sending over 600 in a second (MAXIMUM EXPO ALLOWS)
   };
 };
-
 
 app.listen(port, () => {
   console.log(`Running on port ${port}`);
