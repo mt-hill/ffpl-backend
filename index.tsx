@@ -52,7 +52,7 @@ async function getLatestEvent() {
       
     };
   } catch (error) {
-    console.log("getLatestEvent()", error);
+    //console.log("getLatestEvent()", error);
   };
  }; setInterval(getLatestEvent, 1000);
 
