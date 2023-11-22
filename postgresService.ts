@@ -85,8 +85,14 @@ async function controller(){
       }
       else {
         if (!updated){ 
-          await refreshDB();
+          await db.many ("DELETE FROM events");
+
+          await db.many ("DELETE FROM gwstats");
+
+          await db.many ("UPDATE users SET notifications_enabled = false");
+
           await loadDB();
+          
           await updateUsersPlayerPicks(); 
           updated = true;
           console.log("db updated for gw", gameweek);
@@ -322,7 +328,7 @@ async function loadDB(){
       await db.none('INSERT INTO gwstats (elementId, fixture, goals, assists, cleansheet, goalsCon, ownGoals, pensSaved, pensMissed, yellow, red, saves, bonus, points) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);',
       [elementId, fixture, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     };
-    console.log("gwstats table loaded");
+    console.log("loadDB() success, gwstats table loaded");
   } catch (error){
     console.log(error);
   };
@@ -330,31 +336,19 @@ async function loadDB(){
 
 async function updateUsersPlayerPicks() {
   try {
-    const users = await db.many('SELECT team_id FROM users;');
+    const users = await db.many('SELECT team_id FROM users');
 
     for (const user of users) {
       const teamId = user.team_id;
       const elements = await getPlayerPicks(teamId);
 
       await db.none('UPDATE users SET player_picks = $1 WHERE team_id = $2', [elements, teamId]);
-      console.log("success", teamId)
-
-    }
+    };
+    console.log("success updateUSerPlayerPicks() completed");
   } catch(error){
     console.log("error", error);
   };
 };
-
-async function refreshDB(){
-  try {
-    await db.many("DELETE FROM events");
-    await db.many("DELETE FROM gwstats");
-    await db.many("UPDATE users SET notifications_enabled = false")
-  } catch (error){
-    console.log(error);
-  };
-};
-
 
 // API CALLS
 
