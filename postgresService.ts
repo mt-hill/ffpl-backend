@@ -92,7 +92,7 @@ async function controller(){
           await db.many ("UPDATE users SET notifications_enabled = false");
 
           await loadDB();
-          
+
           await updateUsersPlayerPicks(); 
           updated = true;
           console.log("db updated for gw", gameweek);
@@ -171,12 +171,59 @@ async function compareData(apiData: apiData, dbData: dbData) {
       if (apiValues[key] > dbValues[key]){
         await processEvent(apiData, key);
         await new Promise(resolve => setTimeout(resolve, 2000));
-      };
+      } else if (apiValues[key] < dbValues[key]) {
+        await removeEvent(apiData, key);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     };
   } catch (error){
     console.log("compareData()", error)
   };
 };
+
+async function removeEvent (apiData: apiData, key: string){
+  try{
+    if (key === "goals"){
+      addEvent("[CORRECTION] Goal Removed", apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "assists"){
+      addEvent("[CORRECTION] Assist Removed",  apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "owngoals"){
+      addEvent("[CORRECTION] Own Goal Removed",  apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "goalscon"){
+      const defgkp = await db.oneOrNone('SELECT * FROM playermap WHERE (position = $1 OR position = $2) AND elementid = $3', ["Defender", "Goalkeeper", apiData.elementid]);
+      if (apiData.goalscon === 0 && defgkp){
+      addEvent("[CORRECTION] Goal Removed",  apiData.elementid, apiData.fixture);
+      };
+    } 
+    else if (key === "penssaved"){
+      addEvent("[CORRECTION] Penalty Save Removed", apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "pensmissed"){
+      addEvent("[CORRECTION] Penalty Miss Removed", apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "yellow"){
+      addEvent("[CORRECTION] Yellow Card Removed", apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "red"){
+      addEvent("[CORRECTION] Red Card Removed", apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "bonus"){
+      if (apiData.bonus === 3){
+        addEvent("[CORRECTION] 3 Bonus Points", apiData.elementid, apiData.fixture);
+      } else if (apiData.bonus === 2) {
+        addEvent("[CORRECTION] 2 Bonus points", apiData.elementid, apiData.fixture);
+      } else if (apiData.bonus === 1) {
+        addEvent("[CORRECTION] 1 Bonus points", apiData.elementid, apiData.fixture);
+      };
+    };
+    updateDatabase(apiData);
+  } catch(error){
+    console.log("ProcessEvent()", error);
+  };
+}
 
 async function processEvent(apiData: apiData, key: string){
   try{
@@ -439,7 +486,7 @@ async function getFixture(id: number){
 
     for (const fixture of fixtures) {
       if (fixture.id === id){
-        const name = console.log((teamMap)[fixture.team_h]," vs ",(teamMap)[fixture.team_a]);
+        const name = console.log((teamMap)[fixture.team_h], fixture.team_h_score, " - ", fixture.team_a_score, (teamMap)[fixture.team_a]);
         return name;
       }; 
     };
