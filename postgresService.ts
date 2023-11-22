@@ -85,11 +85,11 @@ async function controller(){
       }
       else {
         if (!updated){ 
-          await db.many ("DELETE FROM events");
+          await db.manyOrNone ("DELETE FROM events");
 
-          await db.many ("DELETE FROM gwstats");
+          await db.manyOrNone ("DELETE FROM gwstats");
 
-          await db.many ("UPDATE users SET notifications_enabled = false");
+          await db.manyOrNone ("UPDATE users SET notifications_enabled = false");
 
           await loadDB();
 
