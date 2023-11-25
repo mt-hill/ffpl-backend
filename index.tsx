@@ -49,7 +49,6 @@ async function getLatestEvent() {
       const tokens = await postgresService.getExpoPushTokens(id);
       await db.one('UPDATE events SET sent = $4 WHERE fixture = $1 AND name = $2 AND event = $3',[levent.fixture, levent.name, levent.event, true])
       await sendNotifications(tokens, levent);
-      
     };
   } catch (error) {
     console.log("getLatestEvent()", error);

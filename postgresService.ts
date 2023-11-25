@@ -1,6 +1,6 @@
 import axios from 'axios';
 import db from './dbCon';
-import { teamMap, positionMap, bootstrapStatic, apiData, dbData } from './consts';
+import { teamMap, positionMap, bootstrapStatic, apiData, dbData, fixture } from './consts';
 
 
 // APP RELATED FUNCTIONS
@@ -320,13 +320,16 @@ async function addEvent(event: string, elementid: number, fixture: number){
   try {
     const playerDetails = await db.oneOrNone('SELECT * FROM playermap WHERE elementid = $1', elementid);
     const playerName = playerDetails.name;
-    const fixturename = await getFixture(fixture);
+    const fix = await getFixture(fixture);
+    
+    if (fix && playerDetails){
+      const { home, away, homes, aways } = fix;
 
-    if (playerDetails){  
       await db.none('INSERT INTO events(fixture, name, event, sent) VALUES ($1, $2, $3, $4)',
-      [fixturename, playerName, event, false]);
-      console.log(fixturename, playerName, event, false);
+      [, playerName, event, false]);
+      console.log(`${home} ${homes} - ${aways} ${away}`, playerName, event, false);
     };
+
   } catch (error){
     console.log("addEvent()", error);
   };
@@ -479,15 +482,20 @@ async function getElement(id: Number){
   };
 };
 
-async function getFixture(id: number){
+async function getFixture(id: number): Promise<fixture | false | undefined> {
   try {
     const response = await axios.get(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`);
     const fixtures = response.data;
 
     for (const fixture of fixtures) {
       if (fixture.id === id){
-        const name = console.log((teamMap)[fixture.team_h], fixture.team_h_score, " - ", fixture.team_a_score, (teamMap)[fixture.team_a]);
-        return name;
+        const home = (teamMap)[fixture.team_h];
+        const away = (teamMap)[fixture.team_a];
+        const aways = fixture.team_a_score;
+        const homes = fixture.team_h_score;
+
+        const fix: fixture = { home, away, aways, homes };
+        return fix;
       }; 
     };
   } catch (error) {

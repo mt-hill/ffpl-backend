@@ -32,6 +32,12 @@ export type TeamMap = {
 export type PositionMap = {
     [key: number]: string;
   };
+export interface fixture {
+  home: string,
+  homes: number,
+  away: string,
+  aways: number
+  };
 export interface apiData {
     elementid: number,
     fixture: number,
