@@ -282,7 +282,7 @@ export const getExpoPushTokens = async (player_id: number) => {
   try {
     const query = 'SELECT token FROM users WHERE $1 = ANY(player_picks) AND notifications_enabled = true';
     const tokens = await db.map(query, [player_id], (row) => row.token);
-    return(tokens)
+    return(tokens);
   } catch (error) {
     console.error('Error getting Expo Push Tokens:', error);
     return [];
@@ -326,7 +326,7 @@ async function addEvent(event: string, elementid: number, fixture: number){
       const { home, away, homes, aways } = fix;
 
       await db.none('INSERT INTO events(fixture, name, event, sent) VALUES ($1, $2, $3, $4)',
-      [, playerName, event, false]);
+      [`${home} ${homes} - ${aways} ${away}`, playerName, event, false]);
       console.log(`${home} ${homes} - ${aways} ${away}`, playerName, event, false);
     };
 

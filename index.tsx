@@ -48,8 +48,15 @@ async function getLatestEvent() {
       const player = await db.one ('SELECT elementid FROM playermap WHERE name = $1',[levent.name]);
       const id = player.elementid;
       const tokens = await postgresService.getExpoPushTokens(id);
-      await db.one('UPDATE events SET sent = $4 WHERE fixture = $1 AND name = $2 AND event = $3',[levent.fixture, levent.name, levent.event, true])
-      await sendNotifications(tokens, levent);
+
+      if (tokens){
+        console.log("tokens received");
+        await db.one('UPDATE events SET sent = $1 WHERE id = $2',[true, levent.id]);
+        await sendNotifications(tokens, levent);
+      } else {
+        console.log("no users with this player");
+        await db.one('UPDATE events SET sent = $1 WHERE id = $2',[true, levent.id]);
+      };
     };
   } catch (error) {
     //console.log("getLatestEvent()", error);
