@@ -8,7 +8,7 @@ const port = 8000;
 const expo = new Expo();
 const jsonParser = BodyParser.json();
 
-//ROUTE FOR FRONTEND
+//ROUTES FOR FRONTEND
 
 app.post('/registerNotifications', jsonParser, async (req, res) => {
   const teamId = Number(req.body.teamId);
@@ -51,8 +51,8 @@ async function getLatestEvent() {
 
       if (tokens.length > 0){
         console.log("tokens received");
+        sendNotifications(tokens, levent.name, levent.fixture, levent.event);
         await db.one('UPDATE events SET sent = $1 WHERE id = $2',[true, levent.id]);
-        await sendNotifications(tokens, levent);
       } else {
         console.log("no users with this player");
         await db.one('UPDATE events SET sent = $1 WHERE id = $2',[true, levent.id]);
@@ -63,29 +63,29 @@ async function getLatestEvent() {
   };
  }; setInterval(getLatestEvent, 1000);
 
-const sendNotifications = async (tokens: string[], levent: [{name: string, fixture: string, event: string}]) => {
-  const maxBatchSize = 100;
-  const event = levent[0];
+const sendNotifications = async (tokens: string[], name: string, fixture: string, event: string) => {
+  try {
+    const maxBatchSize = 100;
 
-  for (let i = 0; i < tokens.length; i += maxBatchSize) { // NOTIFICATIONS SENT IN BATCHES OF 100 (MAXIMUM EXPO ALLOWS)
-    const batchTokens = tokens.slice(i, i + maxBatchSize);
-    const messages: ExpoPushMessage[] = batchTokens.map(token => ({
-      to: token,
-      title: `${event.fixture}`,
-      body: `${event.event} for ${event.name}`,
-      priority: 'high',
-      sound: 'default',
-      channelId: 'default'
-    }));
-
-    try {
+    for (let i = 0; i < tokens.length; i += maxBatchSize) {
+      const batchTokens = tokens.slice(i, i + maxBatchSize);
+      const messages: ExpoPushMessage[] = batchTokens.map(token => ({
+        to: token,
+        title: fixture,
+        body: `${event} for ${name}`,
+        priority: 'high',
+        sound: 'default',
+        channelId: 'default'
+      }));
+      
       const ticketChunk = await expo.sendPushNotificationsAsync(messages);
       console.log("push notifications sent", ticketChunk);
-    } catch (error) {
-      console.error('Error sending push notifications:', error);
-    }
-    await new Promise(resolve => setTimeout(resolve, 200)); // 200ms timeout to prevent sending over 600 in a second (MAXIMUM EXPO ALLOWS)
-  };
+
+      await new Promise(resolve => setTimeout(resolve, 200));
+    };
+  } catch (error) {
+    console.error('Error sending push notifications:', error);
+  }
 };
 
 app.listen(port, () => {
