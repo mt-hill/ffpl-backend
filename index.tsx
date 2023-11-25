@@ -49,7 +49,7 @@ async function getLatestEvent() {
       const id = player.elementid;
       const tokens = await postgresService.getExpoPushTokens(id);
 
-      if (tokens){
+      if (tokens.length > 0){
         console.log("tokens received");
         await db.one('UPDATE events SET sent = $1 WHERE id = $2',[true, levent.id]);
         await sendNotifications(tokens, levent);
