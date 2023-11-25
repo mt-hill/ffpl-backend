@@ -51,7 +51,7 @@ async function getLatestEvent() {
       await sendNotifications(tokens, levent);
     };
   } catch (error) {
-    console.log("getLatestEvent()", error);
+    //console.log("getLatestEvent()", error);
   };
  }; setInterval(getLatestEvent, 1000);
 
