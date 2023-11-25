@@ -45,7 +45,8 @@ async function getLatestEvent() {
     const levent = await db.one ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
     
     if (levent.sent === false) {
-      const id = await db.one ('SELECT elementid FROM playermap WHERE name = $1',[levent.name]);
+      const player = await db.one ('SELECT elementid FROM playermap WHERE name = $1',[levent.name]);
+      const id = player.elementid;
       const tokens = await postgresService.getExpoPushTokens(id);
       await db.one('UPDATE events SET sent = $4 WHERE fixture = $1 AND name = $2 AND event = $3',[levent.fixture, levent.name, levent.event, true])
       await sendNotifications(tokens, levent);
