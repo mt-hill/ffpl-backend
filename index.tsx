@@ -44,7 +44,7 @@ async function getLatestEvent() {
   try {
     const levent = await db.one ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
     
-    if (levent.sent = false) {
+    if (levent.sent === false) {
       const id = await db.one ('SELECT elementid FROM playermap WHERE name = $1',[levent.name]);
       const tokens = await postgresService.getExpoPushTokens(id);
       await db.one('UPDATE events SET sent = $4 WHERE fixture = $1 AND name = $2 AND event = $3',[levent.fixture, levent.name, levent.event, true])
@@ -52,7 +52,7 @@ async function getLatestEvent() {
       
     };
   } catch (error) {
-    //console.log("getLatestEvent()", error);
+    console.log("getLatestEvent()", error);
   };
  }; setInterval(getLatestEvent, 1000);
 
