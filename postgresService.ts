@@ -69,7 +69,7 @@ export const getToken = async (expoPushToken: string) => {
 
 
 // VARS
-export let gameweek = 10;
+export let gameweek = 13;
 let updated = false;
 
 
@@ -321,7 +321,7 @@ async function addEvent(event: string, elementid: number, fixture: number){
     const playerDetails = await db.oneOrNone('SELECT * FROM playermap WHERE elementid = $1', elementid);
     const playerName = playerDetails.name;
     const fix = await getFixture(fixture);
-    
+
     if (fix && playerDetails){
       const { home, away, homes, aways } = fix;
 
