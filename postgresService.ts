@@ -69,7 +69,7 @@ export const getToken = async (expoPushToken: string) => {
 
 
 // VARS
-export let gameweek = 13;
+export let gameweek = 14;
 let updated = false;
 
 
@@ -86,13 +86,8 @@ async function controller(){
       else {
         if (!updated){ 
           await db.manyOrNone ("DELETE FROM events");
-
           await db.manyOrNone ("DELETE FROM gwstats");
-
-          await db.manyOrNone ("UPDATE users SET notifications_enabled = false");
-
           await loadDB();
-
           await updateUsersPlayerPicks(); 
           updated = true;
           console.log("db updated for gw", gameweek);
@@ -115,6 +110,7 @@ async function controller(){
 async function endGW() {
   gameweek++;
   updated = false;
+  await db.manyOrNone ("UPDATE users SET notifications_enabled = false");
   console.log("gameweek week finished, now gameweek = ", gameweek);
 };
 
