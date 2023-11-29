@@ -1,6 +1,6 @@
 import axios from 'axios';
 import db from './dbCon';
-import { teamMap, positionMap, bootstrapStatic, apiData, dbData, fixture } from './consts';
+import { teamMap, positionMap, bootstrapStatic, apiData, dbData } from './consts';
 
 
 // APP RELATED FUNCTIONS
@@ -85,9 +85,11 @@ async function controller(){
       }
       else {
         if (!updated){ 
+          await db.manyOrNone ("DELETE FROM scores");
           await db.manyOrNone ("DELETE FROM events");
           await db.manyOrNone ("DELETE FROM gwstats");
-          await loadDB();
+          await loadGwStats();
+          await loadScores();
           await updateUsersPlayerPicks(); 
           updated = true;
           console.log("db updated for gw", gameweek);
@@ -176,61 +178,18 @@ async function compareData(apiData: apiData, dbData: dbData) {
     console.log("compareData()", error)
   };
 };
-
-async function removeEvent (apiData: apiData, key: string){
-  try{
-    if (key === "goals"){
-      addEvent("[CORRECTION] Goal Removed", apiData.elementid, apiData.fixture);
-    } 
-    else if (key === "assists"){
-      addEvent("[CORRECTION] Assist Removed",  apiData.elementid, apiData.fixture);
-    } 
-    else if (key === "owngoals"){
-      addEvent("[CORRECTION] Own Goal Removed",  apiData.elementid, apiData.fixture);
-    } 
-    else if (key === "goalscon"){
-      const defgkp = await db.oneOrNone('SELECT * FROM playermap WHERE (position = $1 OR position = $2) AND elementid = $3', ["Defender", "Goalkeeper", apiData.elementid]);
-      if (apiData.goalscon === 0 && defgkp){
-      addEvent("[CORRECTION] Goal Removed",  apiData.elementid, apiData.fixture);
-      };
-    } 
-    else if (key === "penssaved"){
-      addEvent("[CORRECTION] Penalty Save Removed", apiData.elementid, apiData.fixture);
-    } 
-    else if (key === "pensmissed"){
-      addEvent("[CORRECTION] Penalty Miss Removed", apiData.elementid, apiData.fixture);
-    } 
-    else if (key === "yellow"){
-      addEvent("[CORRECTION] Yellow Card Removed", apiData.elementid, apiData.fixture);
-    } 
-    else if (key === "red"){
-      addEvent("[CORRECTION] Red Card Removed", apiData.elementid, apiData.fixture);
-    } 
-    else if (key === "bonus"){
-      if (apiData.bonus === 3){
-        addEvent("[CORRECTION] 3 Bonus Points", apiData.elementid, apiData.fixture);
-      } else if (apiData.bonus === 2) {
-        addEvent("[CORRECTION] 2 Bonus points", apiData.elementid, apiData.fixture);
-      } else if (apiData.bonus === 1) {
-        addEvent("[CORRECTION] 1 Bonus points", apiData.elementid, apiData.fixture);
-      };
-    };
-    updateDatabase(apiData);
-  } catch(error){
-    console.log("ProcessEvent()", error);
-  };
-}
-
 async function processEvent(apiData: apiData, key: string){
   try{
     if (key === "goals"){
-      addEvent("Goal", apiData.elementid, apiData.fixture);
+      await updateScores("Goal", apiData.elementid, apiData.fixture);
+      await addEvent("Goal", apiData.elementid, apiData.fixture);
     } 
     else if (key === "assists"){
       addEvent("Assist",  apiData.elementid, apiData.fixture);
     } 
     else if (key === "owngoals"){
-      addEvent("Own Goal",  apiData.elementid, apiData.fixture);
+      await updateScores("OG", apiData.elementid, apiData.fixture);
+      await addEvent("Own Goal",  apiData.elementid, apiData.fixture);
     } 
     else if (key === "cleansheet"){
       const defgkp = await db.oneOrNone('SELECT * FROM playermap WHERE (position = $1 OR position = $2) AND elementid = $3', ["Defender", "Goalkeeper", apiData.elementid]);
@@ -265,12 +224,44 @@ async function processEvent(apiData: apiData, key: string){
         addEvent("1 Bonus points", apiData.elementid, apiData.fixture);
       };
     };
-    updateDatabase(apiData);
+    updatePlayerGwStats(apiData);
   } catch(error){
     console.log("ProcessEvent()", error);
   };
 };
-
+async function removeEvent (apiData: apiData, key: string){
+  try{
+    if (key === "goals"){
+      await updateScores("NoGoal", apiData.elementid, apiData.fixture);
+      await addEvent("[CORRECTION] Goal Removed", apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "assists"){
+      addEvent("[CORRECTION] Assist Removed",  apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "owngoals"){
+      await updateScores("NoOG", apiData.elementid, apiData.fixture);
+      await addEvent("[CORRECTION] Own Goal Removed",  apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "goalscon"){
+      const defgkp = await db.oneOrNone('SELECT * FROM playermap WHERE (position = $1 OR position = $2) AND elementid = $3', ["Defender", "Goalkeeper", apiData.elementid]);
+      if (apiData.goalscon === 0 && defgkp){
+      addEvent("[CORRECTION] Goal Removed",  apiData.elementid, apiData.fixture);
+      };
+    } 
+    else if (key === "penssaved"){
+      addEvent("[CORRECTION] Penalty Save Removed", apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "pensmissed"){
+      addEvent("[CORRECTION] Penalty Miss Removed", apiData.elementid, apiData.fixture);
+    } 
+    else if (key === "red"){
+      addEvent("[CORRECTION] Red Card Removed", apiData.elementid, apiData.fixture);
+    } 
+    updatePlayerGwStats(apiData);
+  } catch(error){
+    console.log("ProcessEvent()", error);
+  };
+};
 
 // DATABASE FUNCTIONS
 
@@ -284,6 +275,7 @@ export const getExpoPushTokens = async (player_id: number) => {
     return [];
   }
 }; 
+
 
 async function dbScanner(id: number){
   try {        
@@ -302,7 +294,38 @@ async function dbScanner(id: number){
   };
 };
 
-async function updateDatabase(apiData: apiData){
+
+async function addEvent(event: string, elementid: number, fixture: number){
+  try {
+    const playerDetails = await db.oneOrNone('SELECT * FROM playermap WHERE elementid = $1', elementid);
+    const playerName = playerDetails.name;
+    const fix = await db.one("SELECT * FROM scores WHERE fixtureid = $1", [fixture]);
+
+    if (playerDetails){ 
+
+      await db.none('INSERT INTO events(fixture, name, event, sent) VALUES ($1, $2, $3, $4)',
+      [`${fix.hometeam} ${fix.homescore} - ${fix.awayscore} ${fix.awayteam}`, playerName, event, false]);
+      console.log(`${fix.hometeam} ${fix.homescore} - ${fix.awayscore} ${fix.awayteam} --`, playerName, event, false);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    };
+
+  } catch (error){
+    console.log("addEvent()", error);
+  };
+};
+async function addPlayerToDB(id: Number, fixture: Number){
+  try{
+  await db.none('INSERT INTO gwstats(elementid, fixture, goals, assists, cleansheet, goalscon, owngoals, penssaved, pensmissed, yellow, red, saves, bonus, points) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
+  [id, fixture, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  console.log(id, "added to gwstats")
+  await addPlayerToMap(id);
+  } catch(error){
+    console.log("addPlayerToDB()", error)
+  };
+};
+
+
+async function updatePlayerGwStats(apiData: apiData){
   try{
     await db.none("UPDATE gwstats SET goals = $2, assists = $3, cleansheet = $4, goalscon = $5, owngoals = $6, penssaved = $7, pensmissed = $8, yellow = $9, red = $10, saves = $11, bonus = $12, points = $13 WHERE elementid = $1",
     [apiData.elementid, apiData.goals, apiData.assists, apiData.cleansheet, apiData.goalscon, apiData.owngoals, apiData.penssaved, apiData.pensmissed, apiData.yellow, apiData.red, apiData.saves, apiData.bonus, apiData.points]);
@@ -311,38 +334,80 @@ async function updateDatabase(apiData: apiData){
     console.log("updateDB()", error);
   };
 };
-
-async function addEvent(event: string, elementid: number, fixture: number){
+async function updateUsersPlayerPicks(){
   try {
-    const playerDetails = await db.oneOrNone('SELECT * FROM playermap WHERE elementid = $1', elementid);
-    const playerName = playerDetails.name;
-    const fix = await getFixture(fixture);
+    const users = await db.many('SELECT team_id FROM users');
 
-    if (fix && playerDetails){
-      const { home, away, homes, aways } = fix;
+    for (const user of users) {
+      const teamId = user.team_id;
+      const elements = await getPlayerPicks(teamId);
 
-      await db.none('INSERT INTO events(fixture, name, event, sent) VALUES ($1, $2, $3, $4)',
-      [`${home} ${homes} - ${aways} ${away}`, playerName, event, false]);
-      console.log(`${home} ${homes} - ${aways} ${away}`, playerName, event, false);
+      await db.none('UPDATE users SET player_picks = $1 WHERE team_id = $2', [elements, teamId]);
     };
-
-  } catch (error){
-    console.log("addEvent()", error);
-  };
-};
-
-async function addPlayerToDB(id: Number, fixture: Number){
-  try{
-  await db.none('INSERT INTO gwstats(elementid, fixture, goals, assists, cleansheet, goalscon, owngoals, penssaved, pensmissed, yellow, red, saves, bonus, points) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
-  [id, fixture, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-  console.log(id, "added to gwstats")
-  await getElement(id);
+    console.log("success updateUSerPlayerPicks() completed");
   } catch(error){
-    console.log("addPlayerToDB()", error)
+    console.log("error", error);
+  };
+};
+async function updateScores(key: string, elementid: number, fixture: number) {
+
+  const scores = await db.one("SELECT * FROM scores where fixtureid = $1", fixture);
+  const team = await db.one("SELECT * FROM playermap WHERE elementid = $1", elementid);
+
+  if (key == "Goal"){
+    if(team.team === scores.hometeam){
+      const newscore = scores.homescore + 1;
+      await db.none('UPDATE scores SET homescore = $1 WHERE fixtureid = $2', [newscore, fixture]);
+    } else if (team.team === scores.awayteam){
+      const newscore = scores.awayscore + 1;
+      await db.none('UPDATE scores SET awayscore = $1 WHERE fixtureid = $2', [newscore, fixture]);
+    }
+  } else if (key == "OG") {
+    if(team.team === scores.hometeam){
+      const newscore = scores.awayscore + 1;
+      await db.none('UPDATE scores SET awayscore = $1 WHERE fixtureid = $2', [newscore, fixture]);
+    } else if (team.team === scores.awayteam){
+      const newscore = scores.homescore + 1;
+      await db.none('UPDATE scores SET homescore = $1 WHERE fixtureid = $2', [newscore, fixture]);
+    }
+  } else if (key == "NoOG") {
+    if(team.team === scores.hometeam){
+      const newscore = scores.awayscore - 1;
+      await db.none('UPDATE scores SET awayscore = $1 WHERE fixtureid = $2', [newscore, fixture]);
+    } else if (team.team === scores.awayteam){
+      const newscore = scores.homescore - 1;
+      await db.none('UPDATE scores SET homescore = $1 WHERE fixtureid = $2', [newscore, fixture]);
+    }
+  } else if (key == "NoGoal") {
+    if(team.team === scores.hometeam){
+      const newscore = scores.homescore - 1;
+      await db.none('UPDATE scores SET homescore = $1 WHERE fixtureid = $2', [newscore, fixture]);
+    } else if (team.team === scores.awayteam){
+      const newscore = scores.awayscore - 1;
+      await db.none('UPDATE scores SET awayscore = $1 WHERE fixtureid = $2', [newscore, fixture]);
+    };
   };
 };
 
-async function loadDB(){
+
+async function loadScores(){
+  try {
+    const response = await axios.get(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`);
+    const fixtures = response.data;
+
+    for (const fixture of fixtures) {
+      const home = (teamMap)[fixture.team_h];
+      const away = (teamMap)[fixture.team_a];
+
+      await db.any("INSERT INTO scores (fixtureid, homeid, hometeam, homescore, awayscore, awayteam, awayid) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [fixture.id, fixture.team_h, home, 0, 0, away, fixture.team_a]);    
+    };
+  } catch (error) {
+    console.log("Error checking fixtures:", error);
+    return false;
+  }; 
+};
+async function loadGwStats(){
   try {
     const response = await axios.get(`https://fantasy.premierleague.com/api/event/${gameweek}/live/`);
     const players = response.data.elements;
@@ -379,22 +444,6 @@ async function loadDB(){
     console.log(error);
   };
 }; 
-
-async function updateUsersPlayerPicks() {
-  try {
-    const users = await db.many('SELECT team_id FROM users');
-
-    for (const user of users) {
-      const teamId = user.team_id;
-      const elements = await getPlayerPicks(teamId);
-
-      await db.none('UPDATE users SET player_picks = $1 WHERE team_id = $2', [elements, teamId]);
-    };
-    console.log("success updateUSerPlayerPicks() completed");
-  } catch(error){
-    console.log("error", error);
-  };
-};
 
 // API CALLS
 
@@ -455,8 +504,7 @@ async function apiScanner(){
     return null;
   };
 };
-
-async function getElement(id: Number){
+async function addPlayerToMap(id: Number){
   try{
     const response = await axios.get(bootstrapStatic);
     const elements = response.data.elements;
@@ -477,29 +525,6 @@ async function getElement(id: Number){
       console.log("getElement()", error);
   };
 };
-
-async function getFixture(id: number): Promise<fixture | false | undefined> {
-  try {
-    const response = await axios.get(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`);
-    const fixtures = response.data;
-
-    for (const fixture of fixtures) {
-      if (fixture.id === id){
-        const home = (teamMap)[fixture.team_h];
-        const away = (teamMap)[fixture.team_a];
-        const aways = fixture.team_a_score;
-        const homes = fixture.team_h_score;
-
-        const fix: fixture = { home, away, aways, homes };
-        return fix;
-      }; 
-    };
-  } catch (error) {
-    console.log("Error checking fixtures:", error);
-    return false;
-  };
-};
-
 async function getPlayerPicks (teamId: Number) {
   try {
     const response = await axios.get(`https://fantasy.premierleague.com/api/entry/${teamId}/event/${gameweek}/picks/`);
@@ -516,8 +541,7 @@ async function getPlayerPicks (teamId: Number) {
     return null;
 }
 };
-
-async function checkInplay() {
+async function checkInplay(){
   let inplay = false;
   try {
     const fixtures = await axios.get(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`);
@@ -539,3 +563,6 @@ async function checkInplay() {
     console.log(error);
   };
 };
+
+
+ 
