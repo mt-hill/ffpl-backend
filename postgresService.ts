@@ -103,13 +103,13 @@ async function controller(){
         };
       };
     } catch (error){
-      console.log(error);
+      console.log("FPL UPDATING...");
     };
     await new Promise(resolve => setTimeout(resolve, 30000));
   };
 }; controller ();
 
-async function endGW() {
+async function endGW(){
   gameweek++;
   updated = false;
   await db.manyOrNone ("UPDATE users SET notifications_enabled = false");
@@ -137,7 +137,7 @@ async function mainLoop(){
 
 
 // EVENT PROCESSING
-async function compareData(apiData: apiData, dbData: dbData) {
+async function compareData(apiData: apiData, dbData: dbData){
   try {
     const apiValues: Record <string, number> = { 
       goals: apiData.goals,
@@ -349,7 +349,7 @@ async function updateUsersPlayerPicks(){
     console.log("error", error);
   };
 };
-async function updateScores(key: string, elementid: number, fixture: number) {
+async function updateScores(key: string, elementid: number, fixture: number){
 
   const scores = await db.one("SELECT * FROM scores where fixtureid = $1", fixture);
   const team = await db.one("SELECT * FROM playermap WHERE elementid = $1", elementid);
@@ -399,7 +399,7 @@ async function loadScores(){
       const home = (teamMap)[fixture.team_h];
       const away = (teamMap)[fixture.team_a];
 
-      await db.any("INSERT INTO scores (fixtureid, homeid, hometeam, homescore, awayscore, awayteam, awayid) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      await db.none("INSERT INTO scores (fixtureid, homeid, hometeam, homescore, awayscore, awayteam, awayid) VALUES ($1, $2, $3, $4, $5, $6, $7)",
       [fixture.id, fixture.team_h, home, 0, 0, away, fixture.team_a]);    
     };
   } catch (error) {
@@ -525,7 +525,7 @@ async function addPlayerToMap(id: Number){
       console.log("getElement()", error);
   };
 };
-async function getPlayerPicks (teamId: Number) {
+async function getPlayerPicks (teamId: Number){
   try {
     const response = await axios.get(`https://fantasy.premierleague.com/api/entry/${teamId}/event/${gameweek}/picks/`);
 
