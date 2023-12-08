@@ -69,7 +69,7 @@ export const getToken = async (expoPushToken: string) => {
 
 
 // VARS
-export let gameweek = 14;
+export let gameweek =  16;
 let updated = false;
 
 
@@ -304,7 +304,7 @@ async function addEvent(event: string, elementid: number, fixture: number){
     if (playerDetails){ 
 
       await db.none('INSERT INTO events(fixture, name, event, sent) VALUES ($1, $2, $3, $4)',
-      [`${fix.hometeam} ${fix.homescore} - ${fix.awayscore} ${fix.awayteam}`, playerName, event, false]);
+      [`${fix.hometeam} vs ${fix.awayteam}`, playerName, event, false]);
       console.log(`${fix.hometeam} ${fix.homescore} - ${fix.awayscore} ${fix.awayteam} --`, playerName, event, false);
       await new Promise(resolve => setTimeout(resolve, 2000));
     };
