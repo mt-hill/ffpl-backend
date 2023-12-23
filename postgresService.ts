@@ -474,8 +474,8 @@ async function apiScanner(){
           },
           explain: [{
             fixture,
-          }],
-      } = player; 
+          } = { fixture: 0 }],
+        } = player;
 
       if (started === 1 || minutes > 0){ 
         playerData.push({
