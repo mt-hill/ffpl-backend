@@ -69,7 +69,7 @@ export const getToken = async (expoPushToken: string) => {
 
 
 // VARS
-export let gameweek =  18;
+export let gameweek =  19;
 let updated = false;
 
 
