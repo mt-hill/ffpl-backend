@@ -1,4 +1,4 @@
-## Backend code to my first project, a fantasy pl notification app 
+## Backend code to my first project, an FPL notification app 
 
 #### I self-taught and did everything myself, backend, frontend, database, api, deployment
 
