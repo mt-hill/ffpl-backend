@@ -1,7 +1,13 @@
-## Backend code to my first app
+## **https://flashfpl.com**
+### Backend code to my first project 
 
-### I taught and did everything myself, backend, frontend, database, api, cloud....
+#### I self-taught and did everything myself, backend, frontend, database, api, deployment
 
-#### I'm not sure how it works
+##### I'm not sure how it worked
 
-##### But it does
+###### But it did....
+---
+*This is the server code to an iOS/Android notification app, more specifically a Fantasy Premier League notification app.* 
+
+*
+
