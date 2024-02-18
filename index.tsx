@@ -8,8 +8,18 @@ const port = 8000;
 const expo = new Expo();
 const jsonParser = BodyParser.json();
 
-//ROUTES FOR FRONTEND
 
+
+
+
+
+
+
+
+
+
+
+/////////// SAVES A USERS EXPO TOKEN FOR NOTIFICATIONS /////////// 
 app.post('/registerNotifications', jsonParser, async (req, res) => {
   const teamId = Number(req.body.teamId);
   const token = String(req.body.token);
@@ -18,12 +28,7 @@ app.post('/registerNotifications', jsonParser, async (req, res) => {
   await postgresService.saveToken(teamId, token, notificationEnabled);
   res.status(200).json({ message: 'success' });
 });
-
-app.get('/gameweek', (req, res) => {
-  const gameweeknum = postgresService.gameweek;
-  res.json(gameweeknum);
-});
-
+/////////// GETS USERS EXPO TOKEN WHEN VISITING APP /////////// 
 app.post('/getToken', jsonParser, async (req, res) => {
   const expoPushToken = String(req.body.expoPushToken);
   try {
@@ -38,8 +43,33 @@ app.post('/getToken', jsonParser, async (req, res) => {
   }
 });
 
-////// NOTIFICATION FUNCTIONS
 
+
+
+
+
+
+
+
+
+
+/////////// CURRENT GAMEWEEK NUMBER /////////// 
+app.get('/gameweek', (req, res) => {
+  const gameweeknum = postgresService.gameweek;
+  res.json(gameweeknum);
+});
+
+
+
+
+
+
+
+
+
+
+
+/////////// GETS LATEST EVENT FROM DATABASE /////////// 
 async function getLatestEvent() {
   try {
     const levent = await db.one ('SELECT * FROM events ORDER BY id DESC LIMIT 1');
@@ -63,6 +93,7 @@ async function getLatestEvent() {
   };
  }; setInterval(getLatestEvent, 1000);
 
+/////////// SENDS NOTIFICATIONS /////////// 
 const sendNotifications = async (tokens: string[], name: string, fixture: string, event: string) => {
   try {
     const maxBatchSize = 100;
@@ -87,6 +118,17 @@ const sendNotifications = async (tokens: string[], name: string, fixture: string
     console.error('Error sending push notifications:', error);
   }
 };
+
+
+
+
+
+
+
+
+
+
+
 
 app.listen(port, () => {
   console.log(`Running on port ${port}`);
