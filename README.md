@@ -1,5 +1,7 @@
-# This was my first app.
+## Backend code to my first app
 
-## The coding is truly terrible
+### I taught and did everything myself, backend, frontend, database, api, cloud....
 
-# But it works...
+#### I'm not sure how it works
+
+##### But it does
