@@ -1,4 +1,5 @@
 ## Code to the first project I built.
+*This was the first project I made. I had no real idea what I was doing, just started hacking something together. The code is useful for probably nothing. The idea behind the app was useful and I may return to this and make version two now I have more knowledge and experience.*
 
 #### I self-taught and did everything myself, backend, frontend, database, api, deployment
 
@@ -26,4 +27,4 @@
                         sends notification of event to users
 
 
-This was the first project I made. I had no real idea what I was doing, just started hacking something together. The code is useful for probably nothing. The idea behind the app was useful and I may return to this and make version two now I have more knowledge and experience.
+
