@@ -1,4 +1,4 @@
-## Code to the first project I built.
+## Code to the first project I built. Fantasy Premier League Notification App
 *This was the first project I made. I had no real idea what I was doing, just started hacking something together to learn something new. The code is useful for probably nothing. The idea behind the app was useful and I may return to this in the future and make version two.*
 
 #### I self-taught and did everything myself, backend, frontend, database, api, deployment
