@@ -12,19 +12,19 @@
 
         scans the the fantasy premier league api periodically
 
-        compares each player against each player in my db
+        compares each players live stats against each player live stats in database
 
-        if api != database, processes a new event
-
-                adds to the event list and updates the player gw stats
+        if player stats in api != player stats in database
+                (for example, haaland scores a goal)
+                adds to the event printer and updates the player gw stats in database
         
-                function elsewhere constantly checks event list for new events
+                another function is constantly checks event printer for new events
         
                 if new event is found
         
-                        checks users table for teams with that particular player
+                        checks app users table for user with haaland
                 
-                        sends notification of event to users
+                        sends notification of haalands goals to these users
 
 
 
