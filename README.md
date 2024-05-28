@@ -12,11 +12,11 @@
 
         scans the the fantasy premier league api periodically
 
-        compares each players live stats against each player live stats in database
+        compares each players live stats against each player live stats in my database
 
         if player stats in api != player stats in database
-                (for example, haaland scores a goal)
-                adds to the event printer and updates the player gw stats in database
+                (for example, haaland scores a goal: API = Haaland Goals 1 || DB = Haaland Goals 0)
+                adds to the event printer and updates the player stats in database
         
                 another function is constantly checks event printer for new events
         
