@@ -7,7 +7,7 @@
 
 ###### **https://flashfpl.com**
 
-# The general logic worked like this:
+### The idea was this:
 
 
         scans the the fantasy premier league api periodically
