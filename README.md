@@ -1,4 +1,4 @@
-## Code to the first project I built. Fantasy Premier League Notification App
+## FlashFPL. Fantasy Premier League Notification App
 *This was the first project I made which I had no real idea what I was doing. Just started building (or hacking) something together to learn something new. The code is useful for probably nothing. The idea behind the app was useful and I may return to this in the future and make a cleaner version. More details an be found here https://flashfpl.com (APP is no longer active)*
 
 #### I self-taught and did everything myself for this. Backend, Frontend, Databases, API's and deploying to the cloud.
